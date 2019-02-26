@@ -1498,13 +1498,10 @@ public class PatientGUI extends JPanel {
                 (pInfo_lastNameTextField.getText(), Integer.parseInt(pInfo_SSNTextField.getText()));
 
         if (patient != null) {
-            if (!MainGUI.pimsSystem.lookUpAppointmentDate(patient).equals(""))
-                JOptionPane.showMessageDialog(null, "This patient already has an appointment");
-            else if (MainGUI.pimsSystem.add_date(datePicker.getText(), timePicker.getText(), patient))
-                JOptionPane.showMessageDialog
-                        (null, "Appointment Saved");
-            else JOptionPane.showMessageDialog
-                        (null, "Sorry. This Time Slot Is Taken. Select Another Date or Time");
+        	
+        	String message = MainGUI.pimsSystem.add_date(datePicker.getText(), timePicker.getText(), patient);
+        	JOptionPane.showMessageDialog(null, message);
+        	
         } else JOptionPane.showMessageDialog(null, "Error");
     }// end cal_requestAppointment
     

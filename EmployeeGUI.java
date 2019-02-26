@@ -116,6 +116,7 @@ public class EmployeeGUI extends JPanel {
     JTextField search_lNameField, search_fNameField;
     JButton search_searchButton, search_selectPatientFoundButton;
     JComboBox<String> search_choosePatientCB;
+    ArrayList<patient> patientsFound;
 
     // Constructor
     public EmployeeGUI() {
@@ -171,6 +172,7 @@ public class EmployeeGUI extends JPanel {
 
         // SearchTab Listeners
         search_searchButton.addActionListener(e -> searchPatient());
+        search_selectPatientFoundButton.addActionListener(e -> search_selectPatientToDisplay()); 
         
     }// end initialize()
 
@@ -629,10 +631,15 @@ public class EmployeeGUI extends JPanel {
         search_searchButton = new JButton("Search");
         
         // after search - choose a patient to display information for
+        // keep invisible unless more than one patient shares First & Last name
         search_searchResultLabel = new JLabel("Result of Search");
+        search_searchResultLabel.setVisible(false);
  
         search_choosePatientCB = new JComboBox<String>();
+        search_choosePatientCB.setVisible(false);
+        
         search_selectPatientFoundButton = new JButton("Select Patient");
+        search_selectPatientFoundButton.setVisible(false);
 
         // add components to Search tab
 
@@ -733,22 +740,11 @@ public class EmployeeGUI extends JPanel {
              patient = MainGUI.pimsSystem.patient_details
                      (pInfo_lastNameTextField.getText(), Integer.parseInt(pInfo_ssnTextField.getText()));
             
-             if (patient == null)
-                 JOptionPane.showMessageDialog(null, "No patient with that Last Name and SSN exists in our system");
-             
-             else if (!MainGUI.pimsSystem.lookUpAppointmentDate(patient).equals(""))
-                 JOptionPane.showMessageDialog(null, "This patient already has an appointment");
-             
-             else {
-                 
-            	 if (MainGUI.pimsSystem.add_date(datePicker.getText(), timePicker.getText(), patient)) {
-                     JOptionPane.showMessageDialog
-                             (null, "Appointment Saved");
-                     cal_lookUpAppointmentTextField.setText(MainGUI.pimsSystem.lookUpAppointmentDate(patient));
-                     validate();
-                 } else JOptionPane.showMessageDialog
-                         (null, "Sorry. This Time Slot Is Taken. Select Another Date or Time");
-             } 
+             if (patient != null) {
+             	
+             	String message = MainGUI.pimsSystem.add_date(datePicker.getText(), timePicker.getText(), patient);
+             	JOptionPane.showMessageDialog(null, message);
+             }
          } 
     	 
     	 else {
@@ -1229,15 +1225,10 @@ public class EmployeeGUI extends JPanel {
         fName = search_fNameField.getText();
 
         // find patients with the Last & First Name entered
-        ArrayList<patient> patientsFound = MainGUI.pimsSystem.search_patient(lName, fName);
+        patientsFound = MainGUI.pimsSystem.search_patient(lName, fName);
 
-        // at least one patient found
-        if (patientsFound.size() > 0) {
-        	
-            // display whether patients found or not
-            JOptionPane.showMessageDialog(this, "Found Results for Last Name, First Name: " + lName + ", " + fName
-                            + ".\nPlease select a patient and then press \"Select\" to see information.",
-                    "Search Successful", JOptionPane.DEFAULT_OPTION);
+        // more than one patient found
+        if (patientsFound.size() > 1) {
 
             // create String ArrayList of patients: Last, First (DOB)
             ArrayList<String> foundList = new ArrayList<String>();
@@ -1261,62 +1252,102 @@ public class EmployeeGUI extends JPanel {
             for (int i = 0; i < foundList.size(); i++) {
                 search_choosePatientCB.addItem(foundList.get(i));
             }
-
-            // grab selected patient
-            patient patientFound = patientsFound.get((search_choosePatientCB.getSelectedIndex()));
-            search_selectPatientFoundButton.addActionListener(e -> fillPatientFoundData(patientFound));
-
-            repaint();
-            revalidate();
+            
+            // display results
+        	search_searchResultLabel.setVisible(true);
+        	search_selectPatientFoundButton.setVisible(true);
+        	search_choosePatientCB.setVisible(true);
+        	
+            // display whether patients found or not
+            JOptionPane.showMessageDialog(this, "Found Results for Last Name, First Name: " + lName + ", " + fName
+            		+ ".\nPlease select a patient and then press \"Select\" to see information.",
+            		"Search Successful", JOptionPane.DEFAULT_OPTION);
+ 
+        }
+        
+        // one patient found
+        else if (patientsFound.size() == 1){
+        	
+        	// do not display drop down list
+        	search_searchResultLabel.setVisible(false);
+        	search_selectPatientFoundButton.setVisible(false);
+        	search_choosePatientCB.setVisible(false);
+        	
+        	JOptionPane.showMessageDialog(this, "Found one match for Last Name, First Name: " + lName + ", " + fName,
+        			"Search Successful", JOptionPane.DEFAULT_OPTION);
+        	
+        	// display patient data
+        	patient patientFound = patientsFound.get(0);
+        	search_fillPatientFoundData(patientFound);
         }
 
         // no patient found
         else {
 
+        	// do not display drop down list
+        	search_searchResultLabel.setVisible(false);
+        	search_selectPatientFoundButton.setVisible(false);
+        	search_choosePatientCB.setVisible(false);
+        	
             JOptionPane.showMessageDialog(this, "No Results found for Last Name, First Name:" + lName + ", " + fName,
                     "Search Failed", JOptionPane.ERROR_MESSAGE);
         }
     } // end searchPatient
 
+    private void search_selectPatientToDisplay(){
+    	
+    	// grab selected patient
+        patient patientFound = patientsFound.get((search_choosePatientCB.getSelectedIndex()));
+        search_fillPatientFoundData(patientFound);
+        
+    } // end search_SelectPatientToDisplay
+    
 	/*
 	 * fillPatientFoundData()
-	 * - called from searchPatient()
+	 * - called from search_searchPatient() & search_selectPatientToDisplay
 	 * - populates all tabs with patient info
 	 */
-    private void fillPatientFoundData(patient toDisplay) {
+    private void search_fillPatientFoundData(patient toDisplay) {
+    	
+    	if (toDisplay != null){
+    		JOptionPane.showMessageDialog(this, "Filling in Information for Patient Found",
+    				"Filling in Info", JOptionPane.DEFAULT_OPTION);
 
-        JOptionPane.showMessageDialog(this, "Filling in Information for Patient Found",
-                "Filling in Info", JOptionPane.DEFAULT_OPTION);
+    		// Calendar Tab
+    		cal_lookUpAppointmentTextField.setText(MainGUI.pimsSystem.lookUpAppointmentDate(toDisplay));
+    		cal_patientNameTextField.setText(toDisplay.l_name + ", " + toDisplay.f_name);
 
-        // Calendar Tab
-        cal_lookUpAppointmentTextField.setText(MainGUI.pimsSystem.lookUpAppointmentDate(toDisplay));
-        cal_patientNameTextField.setText(toDisplay.l_name + ", " + toDisplay.f_name);
+    		// Patient Info Tab
+    		pInfo_lastNameTextField.setText(toDisplay.l_name);
+    		pInfo_firstNameTextField.setText(toDisplay.f_name);
+    		pInfo_middleNameTextField.setText(toDisplay.m_name);
+    		pInfo_ssnTextField.setText(Integer.toString(toDisplay.SSN));
+    		pInfo_dobTextField.setText(toDisplay.dob);
+    		pInfo_phoneNumberTextField.setText(toDisplay.p_number);
+    		pInfo_addressTextField.setText(toDisplay.address);
+    		pInfo_cityTextField.setText(toDisplay.city);
+    		pInfo_zipCodeTextField.setText(Integer.toString(toDisplay.zip));
+    		pInfo_stateComboBox.setSelectedItem(toDisplay.state);
+    		pInfo_userField.setText(toDisplay.user_name);
+    		pInfo_pwField.setText(toDisplay.p_number);
 
-        // Patient Info Tab
-        pInfo_lastNameTextField.setText(toDisplay.l_name);
-        pInfo_firstNameTextField.setText(toDisplay.f_name);
-        pInfo_middleNameTextField.setText(toDisplay.m_name);
-        pInfo_ssnTextField.setText(Integer.toString(toDisplay.SSN));
-        pInfo_dobTextField.setText(toDisplay.dob);
-        pInfo_phoneNumberTextField.setText(toDisplay.p_number);
-        pInfo_addressTextField.setText(toDisplay.address);
-        pInfo_cityTextField.setText(toDisplay.city);
-        pInfo_zipCodeTextField.setText(Integer.toString(toDisplay.zip));
-        pInfo_stateComboBox.setSelectedItem(toDisplay.state);
-        pInfo_userField.setText(toDisplay.user_name);
-        pInfo_pwField.setText(toDisplay.p_number);
+    		// Billing Tab
+    		billing_lNameField.setText(toDisplay.l_name);
+    		billing_ssnField.setText(Integer.toString(toDisplay.SSN));
 
-        // Billing Tab
-        billing_lNameField.setText(toDisplay.l_name);
-        billing_ssnField.setText(Integer.toString(toDisplay.SSN));
-        
-        /* TO DO
-         *
-         * -ask how to add policy and patient history to patient class
-         */
-        
-        repaint();
-        revalidate();
+    		/* TO DO
+    		 *
+    		 * -ask how to add policy and patient history to patient class
+    		 */
+
+    		repaint();
+    		revalidate();
+
+    	}
+    	else
+    		JOptionPane.showMessageDialog(this, "No Patient to Select. Make a search first",
+                    "Filling in Info", JOptionPane.DEFAULT_OPTION);
+    		
     }// end fillPatientData()
     
     /* END Action Listener related functions*/
