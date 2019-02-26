@@ -28,7 +28,7 @@ public class system {
 
 
 
-        //p_list.add(new patient("Amuro", "Ray", "N/A", "whitedevil", "password", "11/04/0063", 7979, 5555, "address", "Baltimore", "Maryland", "205-345-3452"));
+        p_list.add(new patient("Amuro", "Ray", "N/A", "whitedevil", "password", "11/04/0063", 7979, 5555, "address", "Baltimore", "Maryland", "205-345-3452"));
         p_list.add(new patient("Char", "Aznable", "N/A", "redcomet", "password", "11/17/0059", 5959, 7777, "address", "Washington D.C.", "N/A", "205-346-3562"));
         p_list.add(new patient("Haman", "Karn", "N/A", "qubeley", "password", "1/10/0081", 8989, 8888, "address", "Austin", "Texas", "235-645-3294"));
 
