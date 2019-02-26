@@ -276,6 +276,7 @@ public class EmployeeGUI extends JPanel {
 //        cal_SSNTextField = new JTextField(12);
         cal_patientNameTextField = new JTextField(12);
         cal_patientNameTextField.setEditable(false);
+        cal_patientNameTextField.setBackground(Color.white);
         lookUpAppointmentTextField = new JTextField(15);
         lookUpAppointmentTextField.setEditable(false);
         lookUpAppointmentTextField.setBackground(Color.white);
@@ -285,31 +286,20 @@ public class EmployeeGUI extends JPanel {
 
         requestAppointmentButton = new JButton("Request Appointment");
         cancelAppointmentButton = new JButton("Cancel Appointment");
-
-
         lookUpAppointmentButton = new JButton("Look Up Appointment");
 
-
         chooseDateAndTimeLabel.setFont(new java.awt.Font(chooseDateAndTimeLabel.getFont().getFontName(), Font.PLAIN, 30));
-
         lookUpAppointmentLabel.setFont(new java.awt.Font(lookUpAppointmentLabel.getFont().getFontName(), Font.PLAIN, 25));
 
 
         // set the constraints for each component and add
-
         // them to the calendar panel
 
-
         calendarConstraints.gridx = 10;
-
         calendarConstraints.gridy = 10;
-
         calendarConstraints.weightx = 1;
-
         calendarConstraints.weighty = 0.2;
-
         calendarConstraints.anchor = GridBagConstraints.NORTH;
-
         calendarConstraints.insets = new Insets(20, 0, 0, 0);
 
 
@@ -318,7 +308,6 @@ public class EmployeeGUI extends JPanel {
 
         // add patient name label
 
-        //calendarConstraints.gridwidth = 20;
         calendarConstraints.anchor = GridBagConstraints.NORTHEAST;
         calendarConstraints.insets = new Insets(10, 0, 0, 40);
 
@@ -467,25 +456,15 @@ public class EmployeeGUI extends JPanel {
         // create text fields
 
         firstNameTextField_PInfo = new JTextField(12);
-
         middleNameTextField_PInfo = new JTextField(12);
-
         lastNameTextField_PInfo = new JTextField(12);
-
         ssnTextField_PInfo = new JTextField(12);
-
         dobTextField_PInfo = new JTextField(12);
-
         phoneNumberTextField_PInfo = new JTextField(12);
-
         addressTextField_PInfo = new JTextField(12);
-
         cityTextField_PInfo = new JTextField(12);
-
         zipCodeTextField_PInfo = new JTextField(12);
-
         userField_PInfo = new JTextField(12);
-
         pwField_PInfo = new JTextField(12);
 
 
@@ -493,16 +472,13 @@ public class EmployeeGUI extends JPanel {
 
         stateComboBox_PInfo = new JComboBox<>(states);
 
-
         // create buttons
 
         updateInfoButton_PInfo = new JButton("Update Existing Patient");
-
         submitNewInfoButton_PInfo = new JButton("Create New Patient File");
 
 
         // set the constraints for each component and add
-
         // them to the patient info panel
 
 
@@ -1080,13 +1056,9 @@ public class EmployeeGUI extends JPanel {
                 else if (!MainGUI.pimsSystem.lookUpAppointmentDate(patient).equals(""))
                     JOptionPane.showMessageDialog(null, "This patient already has an appointment");
                 else {
-                    if (MainGUI.pimsSystem.add_date(datePicker.getText(), timePicker.getText(), patient)) {
-                        JOptionPane.showMessageDialog
-                                (null, "Appointment Saved");
-                        lookUpAppointmentTextField.setText(MainGUI.pimsSystem.lookUpAppointmentDate(patient));
-                        validate();
-                    } else JOptionPane.showMessageDialog
-                            (null, "Sorry. This Time Slot Is Taken. Select Another Date or Time");
+                    String message =
+                            MainGUI.pimsSystem.add_date(datePicker.getText(), timePicker.getText(), patient);
+                    JOptionPane.showMessageDialog(null, message);
                 } //else JOptionPane.showMessageDialog(null, "Error");
             } else {
                 JOptionPane.showMessageDialog(null, "Must Search a Patient First");
@@ -1319,7 +1291,7 @@ public class EmployeeGUI extends JPanel {
                 if (MainGUI.pimsSystem.patient_exists(firstNameTextField_PInfo.getText(),
                         lastNameTextField_PInfo.getText(), dobTextField_PInfo.getText(), Integer.parseInt(ssnTextField_PInfo.getText())))
                     JOptionPane.showMessageDialog
-                            (null, "This Patient Is Already In The System");
+                            (null, "This Patient Is Already In System");
                 else {
                     MainGUI.pimsSystem.add_patient(firstNameTextField_PInfo.getText(),
                             lastNameTextField_PInfo.getText(), middleNameTextField_PInfo.getText(),
