@@ -388,6 +388,8 @@ public class PatientGUI extends JPanel {
 
         // create the patient info panel
         newPatientInfoPanel = new JPanel(new GridBagLayout());
+        newPatientInfoPanel.setBackground(MainGUI.backgroundColor);
+        
         newPatientInfoPanelConstraints = new GridBagConstraints();
         npInfo_firstNameLabel = new JLabel("First Name:");
         npInfo_middleNameLabel = new JLabel("Middle Name:");
@@ -554,6 +556,7 @@ public class PatientGUI extends JPanel {
 
         // create the patient info panel
         patientInfoPanel = new JPanel(new GridBagLayout());
+        patientInfoPanel.setBackground(MainGUI.backgroundColor);
         patientInfoPanelConstraints = new GridBagConstraints();
 
         pInfo_firstNameLabel = new JLabel("First Name:");
@@ -745,6 +748,7 @@ public class PatientGUI extends JPanel {
 
         // create appointments panel
         appointmentsPanel = new JPanel(new GridBagLayout());
+        appointmentsPanel.setBackground(MainGUI.backgroundColor);
         appointmentConstraints = new GridBagConstraints();
 
         app_chooseDateAndTimeLabel = new JLabel("Select Date and Time For Appointment");
