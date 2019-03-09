@@ -1,11 +1,10 @@
-
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 
 /**
- * @author Kamran Lotfian
+ * @author Kamran Lotfian, Ari Ohsie, Esther Ho, Michael Murphy
  * Main Class that houses all the functionality of the backend that will be called by the GUI
  */
 
@@ -17,6 +16,8 @@ public class system {
     private HashMap<patient, String> lookupDateMap;
     private HashMap<String, patient[]> staff_lookupAppointmentsMap;
     private HashMap<String, Double> cost_list;
+    
+    private static PatientDB db;
 
     private int COPAY = 50;
 
@@ -28,6 +29,8 @@ public class system {
         date_list = new HashMap<>();
         lookupDateMap = new HashMap<>();
         staff_lookupAppointmentsMap = new HashMap<>();
+        
+        db = new PatientDB();
 
 
         cost_list = new HashMap<String, Double>();
@@ -35,27 +38,9 @@ public class system {
         cost_list.put("PHYSICAL", 250.0);
         cost_list.put("DIAGNOSTIC", 500.0);
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //Michael's Update to Code BEGIN
-
-        PatientDB pull = new PatientDB();
-        p_list = pull.selectAll();
-
-        //Michael's Update to Code END
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-        // First, Last, Middle (optional), username, password, DOB (MM/DD/YYYY), Last 4 SSN, Zip Code, Address, City, State (full name), Phone # (###-###-####)
-
-        /*p_list.add(new patient("Amuro", "Ray", "N/A", "whitedevil", "password", "11/04/0063", 7979, 55555, "address", "Baltimore", "Maryland", "205-345-3452", true));
-        p_list.add(new patient("Char", "Aznable", "N/A", "redcomet", "password", "11/17/0059", 5959, 77777, "address", "Washington", "District of Columbia", "205-346-3562", true));
-        p_list.add(new patient("Haman", "Karn", "N/A", "qubeley", "password", "01/10/0081", 8989, 88888, "address", "Austin", "Texas", "235-645-3294", true));
-        p_list.add(new patient("Judau", "Ashta", "N/A", "zz", "password", "09/10/0073", 1432, 99999, "address", "Boston", "Massachusetts", "205-345-3452", false));
-        p_list.add(new patient("Kamille", "Bidan", "N/A", "zeta", "password", "11/11/0069", 9376, 66666, "address", "Harrison", "Pennsylvania", "205-345-3452", false));
-
-        // patients with same first and last name
-        p_list.add(new patient("John", "Doe", "N/A", "alpha", "password", "11/11/1991", 1221, 11111, "address", "Seattle", "Washington", "202-232-3563", false));
-        p_list.add(new patient("John", "Doe", "N/A", "beta", "password", "01/22/2011", 1451, 22222, "address", "New York", "New York", "901-766-9087", false));*/
+        // pull patients saved in database
+        //PatientDB pull = new PatientDB();
+        p_list = db.selectAll();
 
 
         //sample staff object within the staff list
@@ -78,9 +63,22 @@ public class system {
     public boolean add_patient(String f_name, String l_name, String m_name, String user_name, String password, String dob,
                                int SSN, int zip, String address, String city, String state, String p_number, boolean policy) {
 
+    	// PatientDB insert = new PatientDB();//Michael's Update to Code
+    	 
         //check if the patient exists
         if (patient_exists(user_name, password)) return false;
+        
+
         p_list.add(new patient(f_name, l_name, m_name, user_name, password, dob, SSN, zip, address, city, state, p_number, policy));
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //Michael's Update to Code BEGIN   
+
+        System.out.println("add patient "+l_name+" ssn " +SSN+ " user " + user_name+ " password "+password);
+        db.insertInto(f_name, l_name, m_name, user_name, password, dob, SSN, zip, address, city, state, p_number, policy); 
+
+        //Michael's Update to Code END
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         return true;
     }
 
@@ -110,29 +108,6 @@ public class system {
         for (patient p : p_list) {
 
             if (p.getUser_name().equals(user_name) && p.getPassword().equals(password)) return true;
-            /*
-        	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-            //Michael's Update to Code BEGIN
-
-            System.out.println("p = "+p.user_name+ "   and  user_name = "+user_name);
-            System.out.println("p = "+p.password+ "   and  password = "+password);
-
-            String pU = p.user_name.toString();
-            String pP = p.password.toString();
-            boolean containsU = p.user_name.toLowerCase().contains(user_name.toLowerCase());
-            boolean containsP = p.password.toLowerCase().contains(password.toLowerCase());
-            System.out.println("This : " + containsU + " and this: " + containsP);
-
-            if (containsU==true && containsP==true) {
-                System.out.println("TRUE");
-            }else{
-                System.out.println("FALSE" + pU + " versus " + user_name);
-            }
-            if (containsU==true && containsP==true) return true;;
-
-            //Michael's Update to Code END
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        	*/
         }
         return false;
     }
@@ -152,30 +127,6 @@ public class system {
     public patient setPatientDetails(String user_Name, String password) {
         for (patient p : p_list) {
             if (p.getUser_name().equals(user_Name) && p.getPassword().equals(password)) return p;
-
-        	/*
-            ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-            //Michael's Update to Code BEGIN
-
-            System.out.println("p = "+p.user_name+ "   and  user_name = "+user_Name);
-            System.out.println("p = "+p.password+ "   and  password = "+password);
-
-            String pUD = p.user_name.toString();
-            String pPD = p.password.toString();
-            boolean containsUD = p.user_name.toLowerCase().contains(user_Name.toLowerCase());
-            boolean containsPD = p.password.toLowerCase().contains(password.toLowerCase());
-            System.out.println("This : " + containsUD + " and this: " + containsPD);
-
-            if (containsUD==true && containsPD==true) {
-                System.out.println("TRUE");
-            }else{
-                System.out.println("FALSE" + pUD + " versus " + user_Name);
-            }
-            if (containsUD==true && containsPD==true) return p;;
-
-            //Michael's Update to Code END
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-*/
         }
 
         return null;
@@ -365,14 +316,8 @@ public class system {
         return lookupDateMap.get(patient);
     }
 
-    //appointment charge
-    public double charge(patient p, String charge) {
-    	/*
-        if (p.policy) {
-            return cost_list.get(charge) - COPAY;
-        } else {
-            return cost_list.get(charge);
-        } */
+    //appointment calculate charge
+    public double calculate_charge(patient p, String charge) {
 
         if (p.isPolicy()) {
             return COPAY;

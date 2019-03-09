@@ -10,16 +10,14 @@
  *  https://github.com/LGoodDatePicker/LGoodDatePicker
  */
 import java.awt.*;
-import java.awt.image.BufferedImage;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
+@SuppressWarnings("serial")
 public class MainGUI extends JFrame{
 
     public static system pimsSystem;

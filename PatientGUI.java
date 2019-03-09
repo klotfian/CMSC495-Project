@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 
+@SuppressWarnings("serial")
 public class PatientGUI extends JPanel {
 
     patient patient;

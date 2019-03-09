@@ -29,10 +29,7 @@ import com.github.lgooddatepicker.components.TimePickerSettings;
 public class EmployeeGUI extends JPanel {
 
     // Patient Information - store info when searched
-    private patient patient; // for search
-
-    // EmployeeGUI title
-    private String employeeGUItitle;
+    private patient currentPatient; // for search
 
     // Login panel
     private JPanel loginPanel;
@@ -49,12 +46,8 @@ public class EmployeeGUI extends JPanel {
     // TAB 1: Appointments
     private JPanel appTab;
     private GridBagConstraints appointmentConstraints;
-    private JLabel app_chooseDateAndTimeLabel, cal_currentAppointmentLabel,
-            cal_patientSSNLabel, app_patientNameLabel, app_lookUpAppointmentLabel,
-            cal_currentPatientLabel;
-    private JTextField cal_currentAppointmentTextField, cal_SSNTextField,
-            app_patientNameTextField, app_lookUpAppointmentTextField,
-            cal_currentPatientTextField;
+    private JLabel app_chooseDateAndTimeLabel, app_instructionLabel, app_patientNameLabel, app_lookUpAppointmentLabel;
+    private JTextField app_patientNameTextField, app_lookUpAppointmentTextField;
     private DatePicker datePicker;
     private TimePicker timePicker;
     private JButton app_requestAppointmentButton, app_cancelAppointmentButton, app_lookUpAppointmentButton;
@@ -88,8 +81,7 @@ public class EmployeeGUI extends JPanel {
     // TAB 3: Billing
     private JPanel billingTab;
     private GridBagConstraints billingTabConstraints;
-    private JLabel billing_patientBillingLabel, billing_fullNameLabel, billing_ssnLabel,
-            billing_billCodeLabel, billing_policyLabel, billing_amtDueLabel,
+    private JLabel billing_patientBillingLabel, billing_instructionLabel, billing_fullNameLabel, billing_billCodeLabel, billing_policyLabel, billing_amtDueLabel,
             billing_historyLabel;
     private JTextField billing_fullNameField, billing_ssnField, billing_policyField, billing_amtDueField;
     private JComboBox<String> billing_codeCB;
@@ -97,12 +89,12 @@ public class EmployeeGUI extends JPanel {
     private JTextArea billing_patientHistoryTextArea;
     private JButton billing_calculateButton;
     
-    // JDialog "pop up" payment tab
+    // JDialog "pop up" payment panel for Billing Tab
     private JDialog paymentDialog; 
     private JPanel paymentPanel;
     private GridBagConstraints paymentPanelConstraints;
-    private JLabel payment_instructionLabel, payment_nameLabel, payment_cardNumberLabel, payment_cardCodeLabel,
-    		payment_cardExpMonthLabel, payment_cardExpYearLabel;
+    private JLabel payment_instructionLabel, payment_nameLabel, payment_cardNumberLabel, payment_cardInstructionLabel,
+    	payment_cardCodeLabel, payment_cardExpMonthLabel, payment_cardExpYearLabel;
     private JTextField payment_nameField, payment_cardNumberField, payment_cardCodeField, payment_amtDueField;
 	private JComboBox<String> payment_monthCB, payment_yearCB;
     private JButton payment_payButton;
@@ -111,11 +103,20 @@ public class EmployeeGUI extends JPanel {
     private JPanel searchTab;
     private GridBagConstraints searchTabConstraints;
     private JLabel search_lNameLabel, search_fNameLabel,
-            search_searchDirectionLabel, search_searchResultLabel;
+            search_searchDirectionLabel;
     private JTextField search_lNameField, search_fNameField;
-    private JButton search_searchButton, search_selectPatientFoundButton;
-    private JComboBox<String> search_choosePatientCB;
+    private JButton search_searchButton; 
     private ArrayList<patient> patientsFound;
+    
+    // JDialog "pop up" selection panel for Search Tab 
+    //(when multiple patients with same First & Last name are found
+    private JDialog selectPatientDialog;
+    private JPanel selectPatientPanel;
+    private GridBagConstraints selectPatientPanelConstraints;
+    private JLabel selectPatient_instructionLabel;
+    private JButton selectPatient_selectPatientFoundButton;
+    private JComboBox<String> selectPatient_choosePatientCB;
+    
 
     // TAB 5: Calendar
     private JPanel calTab;
@@ -155,8 +156,9 @@ public class EmployeeGUI extends JPanel {
         initializeSearchTab();
         initializeCalendarTab();
         
-        // NEW payment JDialog
+        // NEW JDialogs
         initializePaymentDialog();
+        initializeSelectPatientDialog();
 
         // add panels to tabbed pane
         tabbedPane.add("Appointments", appTab);
@@ -189,7 +191,7 @@ public class EmployeeGUI extends JPanel {
 
         // SearchTab Listeners
         search_searchButton.addActionListener(e -> searchPatient());
-        search_selectPatientFoundButton.addActionListener(e -> search_selectPatientToDisplay());
+        selectPatient_selectPatientFoundButton.addActionListener(e -> search_selectPatientToDisplay());
 
         // Calendar Tab Listeners
         cal_chooseDateButton.addActionListener(e -> search_date());
@@ -276,16 +278,21 @@ public class EmployeeGUI extends JPanel {
     private void initializeAppointmentsTab() {
 
         appTab = new JPanel(new GridBagLayout());
+        appTab.setBackground(MainGUI.backgroundColor);
+        appTab.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
         appointmentConstraints = new GridBagConstraints();
 
         app_chooseDateAndTimeLabel = new JLabel("Select Date and Time For Appointment");
+        app_instructionLabel = new JLabel("(Search a patient first)");
         app_patientNameLabel = new JLabel("Patient Name:");
         app_lookUpAppointmentLabel = new JLabel("Look Up Patient's Existing Appointment");
 
         app_chooseDateAndTimeLabel.setFont(new java.awt.Font(app_chooseDateAndTimeLabel.getFont().getFontName(), Font.PLAIN, 30));
+        app_instructionLabel.setFont(new java.awt.Font(app_chooseDateAndTimeLabel.getFont().getFontName(), Font.PLAIN, 20));
         app_lookUpAppointmentLabel.setFont(new java.awt.Font(app_lookUpAppointmentLabel.getFont().getFontName(), Font.PLAIN, 25));
 
         app_chooseDateAndTimeLabel.setForeground(MainGUI.fontColor);
+        app_instructionLabel.setForeground(MainGUI.fontColor);
         app_patientNameLabel.setForeground(MainGUI.fontColor);
         app_lookUpAppointmentLabel.setForeground(MainGUI.fontColor);
 
@@ -318,6 +325,9 @@ public class EmployeeGUI extends JPanel {
         appointmentConstraints.insets = new Insets(20, 0, 0, 0);
         appTab.add(app_chooseDateAndTimeLabel, appointmentConstraints);
 
+        // add instruction label
+        appointmentConstraints.insets = new Insets(50, 0, 0, 0);
+        appTab.add(app_instructionLabel, appointmentConstraints);
 
         // add patient name label
         appointmentConstraints.anchor = GridBagConstraints.NORTHEAST;
@@ -377,6 +387,8 @@ public class EmployeeGUI extends JPanel {
     private void initializePatientInfoTab() {
 
         patientTab = new JPanel(new GridBagLayout());
+        patientTab.setBackground(MainGUI.backgroundColor);
+        patientTab.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
         patientTabConstraints = new GridBagConstraints();
 
         // create labels
@@ -588,15 +600,20 @@ public class EmployeeGUI extends JPanel {
     private void initializeBillingTab() {
 
         billingTab = new JPanel(new GridBagLayout());
+        billingTab.setBackground(MainGUI.backgroundColor);
+        billingTab.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
         billingTabConstraints = new GridBagConstraints();
 
         billing_patientBillingLabel = new JLabel("Patient Billing");
+        billing_instructionLabel = new JLabel("First Search patient, then select billing code");
         billing_fullNameLabel = new JLabel("Patient Full Name:");
         billing_billCodeLabel = new JLabel("Billing Code:");
         billing_policyLabel = new JLabel("Policy:");
         billing_amtDueLabel = new JLabel("Amount Due:");
         billing_patientBillingLabel.setFont(new java.awt.Font
                 (billing_patientBillingLabel.getFont().getFontName(), Font.PLAIN, 40));
+        billing_instructionLabel.setFont(new java.awt.Font
+                (billing_patientBillingLabel.getFont().getFontName(), Font.PLAIN, 20));
         billing_historyLabel = new JLabel("Payment & Appointment History:");
 
         billing_fullNameField = new JTextField(12);
@@ -611,11 +628,10 @@ public class EmployeeGUI extends JPanel {
         billing_policyField.setBackground(Color.white);
 
         String[] billingCodeOptions = {"CHECKUP", "PHYSICAL", "DIAGNOSTIC"};
-        //String[] policyOptions = {"No", "Yes"};
 
         billing_codeCB = new JComboBox<String>(billingCodeOptions);
 
-        // add text area
+        // initialize text area
         billing_patientHistoryTextArea = new JTextArea();
         billing_patientHistoryTextArea.setEditable(false);
         billing_patientHistoryTextArea.setLineWrap(true);
@@ -644,6 +660,11 @@ public class EmployeeGUI extends JPanel {
         billingTabConstraints.anchor = GridBagConstraints.NORTH;
         billingTabConstraints.insets = new Insets(20, 0, 0, 0);
         billingTab.add(billing_patientBillingLabel, billingTabConstraints);
+        
+        // add billing instruction label
+        billingTabConstraints.insets = new Insets(70, 0, 0, 0);
+        billingTabConstraints.weighty = 0.1;
+        billingTab.add(billing_instructionLabel, billingTabConstraints);
 
         // add patient name label
         billingTabConstraints.gridy = 20;
@@ -713,6 +734,7 @@ public class EmployeeGUI extends JPanel {
         billingTabConstraints.gridx = 10;
         billingTabConstraints.gridy = 60;
         billingTabConstraints.gridwidth = 40;
+        billingTabConstraints.gridheight = 20;
         billingTabConstraints.fill = GridBagConstraints.BOTH;
         billingTabConstraints.insets = new Insets(0, 0, 0, 0);
         billingTab.add(billing_historyScrollPane, billingTabConstraints);
@@ -724,6 +746,8 @@ public class EmployeeGUI extends JPanel {
     private void initializeSearchTab() {
 
         searchTab = new JPanel(new GridBagLayout());
+        searchTab.setBackground(MainGUI.backgroundColor);
+        searchTab.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
         searchTabConstraints = new GridBagConstraints();
 
         // search
@@ -742,19 +766,6 @@ public class EmployeeGUI extends JPanel {
 
         search_searchButton = new JButton("Search");
         search_searchButton.setForeground(MainGUI.fontColor);
-
-        // after search - choose a patient to display information for
-        // keep invisible unless more than one patient shares First & Last name
-        search_searchResultLabel = new JLabel("Result of Search");
-        search_searchResultLabel.setVisible(false);
-        search_searchResultLabel.setForeground(MainGUI.fontColor);
-
-        search_choosePatientCB = new JComboBox<String>();
-        search_choosePatientCB.setVisible(false);
-
-        search_selectPatientFoundButton = new JButton("Select Patient");
-        search_selectPatientFoundButton.setVisible(false);
-        search_selectPatientFoundButton.setForeground(MainGUI.fontColor);
 
         // add components to Search tab
 
@@ -794,29 +805,15 @@ public class EmployeeGUI extends JPanel {
         searchTabConstraints.ipady = 10;
         searchTabConstraints.insets = new Insets(0, 0, 0, 0);
         searchTab.add(search_searchButton, searchTabConstraints);
-
-        // add search result label
-        searchTabConstraints.gridy = 50;
-        searchTabConstraints.weighty = 0.2;
-        searchTabConstraints.insets = new Insets(0, 0, 0, 60);
-        searchTab.add(search_searchResultLabel, searchTabConstraints);
-
-        // add choose patient combobox
-        searchTabConstraints.weighty = 1;
-        searchTabConstraints.insets = new Insets(50, 0, 0, 175);
-        searchTab.add(search_choosePatientCB, searchTabConstraints);
-
-        // add select patientfound button
-        searchTabConstraints.ipady = 10;
-        searchTabConstraints.insets = new Insets(50, 225, 0, 0);
-        searchTab.add(search_selectPatientFoundButton, searchTabConstraints);
-
+        
     } // end initializeBillingTab()
 
     // TAB 5: Calendar
     private void initializeCalendarTab() {
 
         calTab = new JPanel(new GridBagLayout());
+        calTab.setBackground(MainGUI.backgroundColor);
+        calTab.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
         calendarConstraints = new GridBagConstraints();
 
         // calendar
@@ -853,7 +850,6 @@ public class EmployeeGUI extends JPanel {
 
         cal_scrollPane = new JScrollPane(cal_table);
         cal_scrollPane.setPreferredSize(new Dimension(220, 203));
-
 
         // add calendar label
         calendarConstraints.gridx = 10;
@@ -904,7 +900,8 @@ public class EmployeeGUI extends JPanel {
 
         calTab.add(cal_scrollPane, calendarConstraints);
     }
-
+    
+    // payment dialog after billing
     private void initializePaymentDialog(){
     	
     	paymentDialog = new JDialog(); 
@@ -912,11 +909,14 @@ public class EmployeeGUI extends JPanel {
     	
     	
         paymentPanel = new JPanel(new GridBagLayout());
+        paymentPanel.setBackground(MainGUI.backgroundColor);
+        paymentPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
         paymentPanelConstraints = new GridBagConstraints();
         
         payment_instructionLabel = new JLabel("Enter Payment Information");
         payment_nameLabel = new JLabel("Cardholder Name:");
         payment_cardNumberLabel = new JLabel("Credit Card Number:"); 
+        payment_cardInstructionLabel = new JLabel("(#'s only. no dashes or spaces):"); 
         payment_cardCodeLabel = new JLabel("Security Code");
         payment_cardExpMonthLabel  = new JLabel("Expiration Month:");
         payment_cardExpYearLabel = new JLabel("Expiration Year:");
@@ -925,6 +925,7 @@ public class EmployeeGUI extends JPanel {
         payment_instructionLabel.setForeground(MainGUI.fontColor);
         payment_nameLabel.setForeground(MainGUI.fontColor);
         payment_cardNumberLabel.setForeground(MainGUI.fontColor);
+        payment_cardInstructionLabel.setForeground(MainGUI.fontColor);
         payment_cardCodeLabel.setForeground(MainGUI.fontColor);
         payment_cardExpMonthLabel.setForeground(MainGUI.fontColor);
         payment_cardExpYearLabel.setForeground(MainGUI.fontColor);
@@ -963,7 +964,7 @@ public class EmployeeGUI extends JPanel {
         paymentPanelConstraints.weightx = 0.2;
         paymentPanelConstraints.gridwidth = 10;
         paymentPanelConstraints.anchor = GridBagConstraints.EAST;
-        paymentPanelConstraints.insets = new Insets(0, 0, 0, 20);
+        paymentPanelConstraints.insets = new Insets(0, 0, 0, 0);
         paymentPanel.add(payment_nameLabel, paymentPanelConstraints);
         
         // card number label
@@ -986,7 +987,7 @@ public class EmployeeGUI extends JPanel {
         // card name field
         paymentPanelConstraints.gridx = 20;
         paymentPanelConstraints.gridy = 20;
-        //paymentPanelConstraints.insets = new Insets(10, 10, 10, 10);
+        paymentPanelConstraints.anchor = GridBagConstraints.WEST;
         paymentPanel.add(payment_nameField, paymentPanelConstraints);
         
         // card number field
@@ -995,18 +996,15 @@ public class EmployeeGUI extends JPanel {
         
         // expiration month combo box
         paymentPanelConstraints.gridy = 40;
-        paymentPanelConstraints.anchor = GridBagConstraints.WEST;
         paymentPanel.add(payment_monthCB, paymentPanelConstraints);
         
         // security code field
         paymentPanelConstraints.gridx = 40;
         paymentPanelConstraints.gridy = 20;
-        paymentPanelConstraints.anchor = GridBagConstraints.EAST;
         paymentPanel.add(payment_cardCodeField, paymentPanelConstraints);
         
         // expiration year combo box
         paymentPanelConstraints.gridy = 30;
-        paymentPanelConstraints.anchor = GridBagConstraints.WEST;
         paymentPanel.add(payment_yearCB, paymentPanelConstraints);
         
         // payment button
@@ -1019,10 +1017,56 @@ public class EmployeeGUI extends JPanel {
         paymentDialog.add(paymentPanel);
         paymentDialog.setSize(700, 400);
         paymentDialog.setLocationRelativeTo(null);
-        //paymentDialog.setVisible(true);
-        
-        
+     
     }// end initializePaymentDialog
+    
+    // shown sometimes in Search Tab
+    private void initializeSelectPatientDialog(){
+    	
+    	selectPatientDialog = new JDialog();
+    	selectPatientDialog.setTitle("Search Results");
+    	
+        selectPatientPanel = new JPanel(new GridBagLayout());
+        selectPatientPanel.setBackground(MainGUI.backgroundColor);
+        selectPatientPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
+        
+        selectPatientPanelConstraints = new GridBagConstraints();
+        
+        selectPatient_instructionLabel = new JLabel("Choose Patient from Drop down List");
+        selectPatient_instructionLabel.setFont(new java.awt.Font(selectPatient_instructionLabel.getFont().getFontName(), 
+        		Font.PLAIN, 20));
+        selectPatient_instructionLabel.setForeground(MainGUI.fontColor);
+    	
+    	selectPatient_choosePatientCB = new JComboBox<String>();
+
+        selectPatient_selectPatientFoundButton = new JButton("Select Patient");
+        selectPatient_selectPatientFoundButton.setForeground(MainGUI.fontColor);
+       
+        // add components to panel
+        
+        // add instruction label
+        selectPatientPanelConstraints.gridwidth = 20;
+        selectPatientPanelConstraints.weighty = 0.1;
+        selectPatientPanelConstraints.anchor = GridBagConstraints.NORTH;
+        selectPatientPanelConstraints.insets = new Insets(20, 0, 0, 0);
+        selectPatientPanel.add(selectPatient_instructionLabel, selectPatientPanelConstraints);
+        
+        // add combo box
+        selectPatientPanelConstraints.gridy = 20;
+        selectPatientPanelConstraints.insets = new Insets(0, 0, 0, 0);
+        selectPatientPanel.add(selectPatient_choosePatientCB, selectPatientPanelConstraints);
+        
+        // add select patient button
+        selectPatientPanelConstraints.gridx = 20;
+        selectPatientPanel.add(selectPatient_selectPatientFoundButton, selectPatientPanelConstraints);
+        
+        // add panel to dialog
+        selectPatientDialog.add(selectPatientPanel);
+        selectPatientDialog.setSize(500, 200);
+        selectPatientDialog.setLocationRelativeTo(null);
+
+    	
+    }// end initializeSelectPatientDialog()
     
     /* END initialize() related functions*/
 
@@ -1061,10 +1105,10 @@ public class EmployeeGUI extends JPanel {
 
     private void app_requestAppointment() {
         if (!app_patientNameTextField.getText().equals((""))) {
-            patient = MainGUI.pimsSystem.patient_details
+            currentPatient = MainGUI.pimsSystem.patient_details
                     (pInfo_lastNameTextField.getText(), Integer.parseInt(pInfo_ssnTextField.getText()));
-            if (patient != null) {
-                String message = MainGUI.pimsSystem.add_date(datePicker.getText(), timePicker.getText(), patient);
+            if (currentPatient != null) {
+                String message = MainGUI.pimsSystem.add_date(datePicker.getText(), timePicker.getText(), currentPatient);
                 JOptionPane.showMessageDialog(null, message);
             }
         } else {
@@ -1075,9 +1119,9 @@ public class EmployeeGUI extends JPanel {
     private void app_cancelAppointment() {
         if (!app_patientNameTextField.getText().equals((""))) {
             if (!pInfo_lastNameTextField.getText().equals((""))) {
-                patient = MainGUI.pimsSystem.patient_details
+                currentPatient = MainGUI.pimsSystem.patient_details
                         (pInfo_lastNameTextField.getText(), Integer.parseInt(pInfo_ssnTextField.getText()));
-                if (!MainGUI.pimsSystem.patient_delete_date(patient))
+                if (!MainGUI.pimsSystem.patient_delete_date(currentPatient))
                     JOptionPane.showMessageDialog
                             (null, "No Appointment Scheduled At This Time");
                 else {
@@ -1092,9 +1136,9 @@ public class EmployeeGUI extends JPanel {
 
     private void app_lookUpAppointment() {
         if (!app_patientNameTextField.getText().equals((""))) {
-            patient = MainGUI.pimsSystem.patient_details
+            currentPatient = MainGUI.pimsSystem.patient_details
                     (pInfo_lastNameTextField.getText(), Integer.parseInt(pInfo_ssnTextField.getText()));
-            String appointment = MainGUI.pimsSystem.lookUpAppointmentDate(patient);
+            String appointment = MainGUI.pimsSystem.lookUpAppointmentDate(currentPatient);
             if (appointment.equals(""))
                 JOptionPane.showMessageDialog
                         (null, "Requested patient has no Appointment Scheduled At This Time");
@@ -1106,7 +1150,10 @@ public class EmployeeGUI extends JPanel {
 
     // Patient Info Tab Listeners
     private void pInfo_updateExisting() {
-
+    	
+    	// currentPatient is the one who is searched
+    	// does not search for patient again, in case Last name or SSN are changed
+    	
         // values to test if there are no input errors
         boolean emptyFields = true, illegalFields = true;
 
@@ -1271,95 +1318,90 @@ public class EmployeeGUI extends JPanel {
                 }
             }
         }
-
+        
         // checks if there are no input errors
-        patient = MainGUI.pimsSystem.patient_details
-                (pInfo_lastNameTextField.getText(), Integer.parseInt(pInfo_ssnTextField.getText()));
-        if (emptyFields && illegalFields && patient != null) {
+        if (emptyFields && illegalFields && currentPatient != null) {
             JOptionPane.showMessageDialog
                     (null, "Information Updated");
-            patient.setL_name(pInfo_lastNameTextField.getText());
-            patient.setF_name(pInfo_firstNameTextField.getText());
-            patient.setM_name(middleName);
-            patient.setSSN(Integer.parseInt(pInfo_ssnTextField.getText()));
-            patient.setDob(pInfo_dobTextField.getText());
-            patient.setP_number(pInfo_phoneNumberTextField.getText());
-            patient.setAddress(pInfo_addressTextField.getText());
-            patient.setCity(pInfo_cityTextField.getText());
-            patient.setState(String.valueOf(pInfo_stateComboBox.getSelectedItem()));
-            patient.setZip(Integer.parseInt(pInfo_zipCodeTextField.getText()));
-            patient.setUser_name(pInfo_userField.getText());
-            patient.setPassword(pInfo_pwField.getText());
+            currentPatient.setL_name(pInfo_lastNameTextField.getText());
+            currentPatient.setF_name(pInfo_firstNameTextField.getText());
+            currentPatient.setM_name(middleName);
+            currentPatient.setSSN(Integer.parseInt(pInfo_ssnTextField.getText()));
+            currentPatient.setDob(pInfo_dobTextField.getText());
+            currentPatient.setP_number(pInfo_phoneNumberTextField.getText());
+            currentPatient.setAddress(pInfo_addressTextField.getText());
+            currentPatient.setCity(pInfo_cityTextField.getText());
+            currentPatient.setState(String.valueOf(pInfo_stateComboBox.getSelectedItem()));
+            currentPatient.setZip(Integer.parseInt(pInfo_zipCodeTextField.getText()));
+            currentPatient.setUser_name(pInfo_userField.getText());
+            currentPatient.setPassword(pInfo_pwField.getText());
 
             String policy = (String) pInfo_policyComboBox.getSelectedItem();
 
             if (policy.equals("Yes"))
-                patient.setPolicy(true);
+                currentPatient.setPolicy(true);
             else
-                patient.setPolicy(true);
+                currentPatient.setPolicy(true);
 
 
         } else if (!String.valueOf(errorMessage).equals("Must Enter"))
             JOptionPane.showMessageDialog(null, errorMessage);
 
-        else if (patient == null)
+        else if (currentPatient == null)
             JOptionPane.showMessageDialog(null, "Error");
     } // end pInfo_updateExisting
 
     private void pInfo_createNew() {
 
         // values to test if there are no input errors
-        boolean emptyFields = true, illegalFields = true;
+        boolean noEmptyFields = true, noIllegalFields = true;
 
         //UIManager.put("OptionPane.minimumSize",new Dimension(500,300));
         String errorMessage = "Must Enter";
         if (String.valueOf(pInfo_firstNameTextField.getText()).equals("")) {
             errorMessage += " First Name,";
-            emptyFields = false;
+            noEmptyFields = false;
         }
         if (String.valueOf(pInfo_lastNameTextField.getText()).equals("")) {
             errorMessage += " Last Name,";
-            emptyFields = false;
+            noEmptyFields = false;
         }
         if (String.valueOf(pInfo_ssnTextField.getText()).equals("")) {
             errorMessage += " Social Security #,";
-            emptyFields = false;
+            noEmptyFields = false;
         }
         if (String.valueOf(pInfo_dobTextField.getText()).equals("")) {
             errorMessage += " Date of Birth,";
-            emptyFields = false;
+            noEmptyFields = false;
         }
         if (String.valueOf(pInfo_phoneNumberTextField.getText()).equals("")) {
             errorMessage += " Phone Number,";
-            emptyFields = false;
+            noEmptyFields = false;
         }
         if (String.valueOf(pInfo_addressTextField).equals("")) {
             errorMessage += " Street,";
-            emptyFields = false;
+            noEmptyFields = false;
         }
         if (String.valueOf(pInfo_cityTextField).equals("")) {
             errorMessage += " City,";
-            emptyFields = false;
+            noEmptyFields = false;
         }
         if (String.valueOf(pInfo_zipCodeTextField).equals("")) {
             errorMessage += " Zip Code,";
-            emptyFields = false;
+            noEmptyFields = false;
         }
         if (String.valueOf(pInfo_userField).equals("")) {
             errorMessage += " Username,";
-            emptyFields = false;
+            noEmptyFields = false;
         }
         if (String.valueOf(pInfo_pwField).equals("")) {
             errorMessage += " password,";
-            emptyFields = false;
+            noEmptyFields = false;
         }
 
-        // if there's no middle name, the text field
-        // is set to "N/A"
-        String middleName;
-        if (String.valueOf(pInfo_middleNameTextField.getText()).equals(""))
-            middleName = "N/A";
-        else middleName = pInfo_middleNameTextField.getText();
+        if (String.valueOf(pInfo_middleNameTextField.getText()).equals("")) {
+		} else
+			pInfo_middleNameTextField.getText();
 
         // throws error if last name has characters other than letters
         if (pInfo_lastNameTextField.getText().length() > 0) {
@@ -1367,7 +1409,7 @@ public class EmployeeGUI extends JPanel {
                 if (!Character.isLetter(pInfo_lastNameTextField.getText().charAt(i))) {
                     JOptionPane.showMessageDialog
                             (null, "Last Name Must Have Only Letters");
-                    illegalFields = false;
+                    noIllegalFields = false;
                     break;
                 }
             }
@@ -1379,7 +1421,7 @@ public class EmployeeGUI extends JPanel {
                 if (!Character.isLetter(pInfo_firstNameTextField.getText().charAt(i))) {
                     JOptionPane.showMessageDialog
                             (null, "First Name Must Have Only Letters");
-                    illegalFields = false;
+                    noIllegalFields = false;
                     break;
                 }
             }
@@ -1392,7 +1434,7 @@ public class EmployeeGUI extends JPanel {
                 if (!Character.isLetter(pInfo_middleNameTextField.getText().charAt(i))) {
                     JOptionPane.showMessageDialog
                             (null, "Middle Name Must Have Only Letters");
-                    illegalFields = false;
+                    noIllegalFields = false;
                     break;
                 }
             }
@@ -1402,13 +1444,13 @@ public class EmployeeGUI extends JPanel {
         if (pInfo_ssnTextField.getText().length() > 0 && pInfo_ssnTextField.getText().length() != 4) {
             JOptionPane.showMessageDialog
                     (null, "Social Security # Must Have 4 Characters");
-            illegalFields = false;
+            noIllegalFields = false;
         } else if (pInfo_ssnTextField.getText().length() == 4) {
             for (int i = 0; i < 4; i++) {
                 if (!Character.isDigit(pInfo_ssnTextField.getText().charAt(i))) {
                     JOptionPane.showMessageDialog
                             (null, "Social Security # Must Have Only Numbers");
-                    illegalFields = false;
+                    noIllegalFields = false;
                     break;
                 }
             }
@@ -1418,12 +1460,12 @@ public class EmployeeGUI extends JPanel {
         if (pInfo_dobTextField.getText().length() > 0 && pInfo_dobTextField.getText().length() != 10) {
             JOptionPane.showMessageDialog
                     (null, "Date of Birth must be formatted \"MM/DD/YYYY\"");
-            illegalFields = false;
+            noIllegalFields = false;
         } else if (pInfo_dobTextField.getText().length() == 10) {
             if (!dobParser(pInfo_dobTextField.getText())) {
                 JOptionPane.showMessageDialog
                         (null, "Date of Birth must be formatted \"MM/DD/YYYY\"");
-                illegalFields = false;
+                noIllegalFields = false;
             }
         }
 
@@ -1431,12 +1473,12 @@ public class EmployeeGUI extends JPanel {
         if (pInfo_phoneNumberTextField.getText().length() > 0 && pInfo_phoneNumberTextField.getText().length() != 12) {
             JOptionPane.showMessageDialog
                     (null, "Phone Number Must be formatted \"###-###-####\"");
-            illegalFields = false;
+            noIllegalFields = false;
         } else if (pInfo_phoneNumberTextField.getText().length() == 12) {
             if (!phoneNumberParser(pInfo_phoneNumberTextField.getText())) {
                 JOptionPane.showMessageDialog
                         (null, "Phone Number Must be formatted \"###-###-####\"");
-                illegalFields = false;
+                noIllegalFields = false;
             }
         }
 
@@ -1447,7 +1489,7 @@ public class EmployeeGUI extends JPanel {
                         !Character.isDigit(pInfo_addressTextField.getText().charAt(i))) {
                     JOptionPane.showMessageDialog
                             (null, "Address Must Have Only Numbers and Letters");
-                    illegalFields = false;
+                    noIllegalFields = false;
                 }
             }
         }
@@ -1458,7 +1500,7 @@ public class EmployeeGUI extends JPanel {
                 if (!Character.isLetter(pInfo_cityTextField.getText().charAt(i))) {
                     JOptionPane.showMessageDialog
                             (null, "City Must Have Only Letters");
-                    illegalFields = false;
+                    noIllegalFields = false;
                     break;
                 }
             }
@@ -1468,19 +1510,19 @@ public class EmployeeGUI extends JPanel {
         if (pInfo_zipCodeTextField.getText().length() > 0 && pInfo_zipCodeTextField.getText().length() != 5) {
             JOptionPane.showMessageDialog
                     (null, "Zip Code Must Have 5 Characters");
-            illegalFields = false;
+            noIllegalFields = false;
         } else if (pInfo_zipCodeTextField.getText().length() == 5) {
             for (int i = 0; i < 5; i++) {
                 if (!Character.isDigit(pInfo_zipCodeTextField.getText().charAt(i))) {
                     JOptionPane.showMessageDialog
                             (null, "Zip Code Must Have Only Numbers");
-                    illegalFields = false;
+                    noIllegalFields = false;
                     break;
                 }
             }
         }
         // checks if there are no input errors
-        if (emptyFields && illegalFields) {
+        if (noEmptyFields && noIllegalFields) {
 
             if (MainGUI.pimsSystem.patient_exists(pInfo_firstNameTextField.getText(),
                     pInfo_lastNameTextField.getText(), pInfo_dobTextField.getText(), Integer.parseInt(pInfo_ssnTextField.getText())))
@@ -1498,7 +1540,7 @@ public class EmployeeGUI extends JPanel {
 
                 MainGUI.pimsSystem.add_patient(pInfo_firstNameTextField.getText(),
                         pInfo_lastNameTextField.getText(), pInfo_middleNameTextField.getText(),
-                        "user", "password",
+                        pInfo_userField.getText(), pInfo_pwField.getText(),
                         pInfo_dobTextField.getText(),
                         Integer.parseInt(pInfo_ssnTextField.getText()), Integer.parseInt(pInfo_zipCodeTextField.getText()),
                         pInfo_addressTextField.getText(), pInfo_cityTextField.getText(),
@@ -1520,36 +1562,33 @@ public class EmployeeGUI extends JPanel {
     // Billing Tab Listeners
 
     private void billing_calculate() {
+    	
         // need to search patient before calculating amount due
         if (billing_fullNameField.equals("")){
             JOptionPane.showMessageDialog(this, "Must search for a patient first!\nGo to the Search Tab.",
                     "Need to Search Patient", JOptionPane.ERROR_MESSAGE);
         }
-        if (MainGUI.pimsSystem.lookUpAppointmentDate(patient).equals("")){
+        if (MainGUI.pimsSystem.lookUpAppointmentDate(currentPatient).equals("")){
             JOptionPane.showMessageDialog(this, "No Appointment to pay for!\nGo to Appointment Tab to make one.",
                     "Nothing to pay for", JOptionPane.ERROR_MESSAGE);
         }
+        
         // patient has been searched - get info from patient info panel
         else {
-            patient =  MainGUI.pimsSystem.patient_details
+        	
+            currentPatient =  MainGUI.pimsSystem.patient_details
                     (pInfo_lastNameTextField.getText(), Integer.parseInt(pInfo_ssnTextField.getText()));
             // patient has a policy, amount due is copay: $50
             // no policy, amount due is cost amount
-            double toPay = MainGUI.pimsSystem.charge(patient, billing_codeCB.getSelectedItem().toString());
+            double toPay = MainGUI.pimsSystem.calculate_charge(currentPatient, billing_codeCB.getSelectedItem().toString());
             billing_amtDueField.setText("$" + doubleToDecimalString(toPay));
 
-
-            JOptionPane.showMessageDialog(this, "Amount Due Calculated. Click \"Ok\" to go to Payment Form",
+            
+            
+            JOptionPane.showMessageDialog(this, "Amount Due Calculated.\nClick \"Ok\" to go to Payment Form",
                     "Calculate", JOptionPane.DEFAULT_OPTION);
 
-            // returns true if appointment payed & recorded
-            if(!MainGUI.pimsSystem.recordApptPayment(patient, billing_amtDueField.getText()))
-                JOptionPane.showMessageDialog
-                        (null, "This Patient Doesn't Have An Appointment Scheduled");
-            else {
-            	
-            	paymentDialog.setVisible(true);
-            }
+            paymentDialog.setVisible(true);
         }
 
     }// end billing_calculate
@@ -1562,8 +1601,10 @@ public class EmployeeGUI extends JPanel {
         fName = search_fNameField.getText();
         // find patients with the Last & First Name entered
         patientsFound = MainGUI.pimsSystem.search_patient(lName, fName);
+        
         // more than one patient found
         if (patientsFound.size() > 1) {
+        	
             // create String ArrayList of patients: Last, First (DOB)
             ArrayList<String> foundList = new ArrayList<String>();
             String toAdd = "";
@@ -1574,41 +1615,34 @@ public class EmployeeGUI extends JPanel {
             }
             int length;
             // clear combo box (in case this is a second search)
-            while ((length = search_choosePatientCB.getItemCount()) > 0) {
-                search_choosePatientCB.removeItemAt(length - 1);
+            while ((length = selectPatient_choosePatientCB.getItemCount()) > 0) {
+                selectPatient_choosePatientCB.removeItemAt(length - 1);
             }
             // add Patient Options to combo box
             for (int i = 0; i < foundList.size(); i++) {
-                search_choosePatientCB.addItem(foundList.get(i));
+                selectPatient_choosePatientCB.addItem(foundList.get(i));
             }
-            // display results
-            search_searchResultLabel.setVisible(true);
-            search_selectPatientFoundButton.setVisible(true);
-            search_choosePatientCB.setVisible(true);
+            
             // display whether patients found or not
-            JOptionPane.showMessageDialog(this, "Found Results for Last Name, First Name: " + lName + ", " + fName
-                            + ".\nPlease select a patient and then press \"Select\" to see information.",
-                    "Search Successful", JOptionPane.DEFAULT_OPTION);
+            JOptionPane.showMessageDialog(this, "Found More than 1 Result for Last Name, First Name: " + lName + ", " + fName
+                            + ".\nPress \"Ok\" to select a patient.",
+                    "Search Successful", JOptionPane.DEFAULT_OPTION); 
+            
+            selectPatientDialog.setVisible(true);
         }
 
         // one patient found
         else if (patientsFound.size() == 1) {
-            // do not display drop down list
-            search_searchResultLabel.setVisible(false);
-            search_selectPatientFoundButton.setVisible(false);
-            search_choosePatientCB.setVisible(false);
+   
             JOptionPane.showMessageDialog(this, "Found one match for Last Name, First Name: " + lName + ", " + fName,
                     "Search Successful", JOptionPane.DEFAULT_OPTION);
             // display patient data
-            patient patientFound = patientsFound.get(0);
-            search_fillPatientFoundData(patientFound);
+            currentPatient = patientsFound.get(0);
+            search_fillPatientFoundData(currentPatient);
         }
         // no patient found
         else {
-            // do not display drop down list
-            search_searchResultLabel.setVisible(false);
-            search_selectPatientFoundButton.setVisible(false);
-            search_choosePatientCB.setVisible(false);
+        
             JOptionPane.showMessageDialog(this, "No Results found for Last Name, First Name:" + lName + ", " + fName,
                     "Search Failed", JOptionPane.ERROR_MESSAGE);
         }
@@ -1616,8 +1650,8 @@ public class EmployeeGUI extends JPanel {
 
     private void search_selectPatientToDisplay() {
         // grab selected patient
-        patient patientFound = patientsFound.get((search_choosePatientCB.getSelectedIndex()));
-        search_fillPatientFoundData(patientFound);
+        currentPatient = patientsFound.get((selectPatient_choosePatientCB.getSelectedIndex()));
+        search_fillPatientFoundData(currentPatient);
 
     } // end search_SelectPatientToDisplay
 
@@ -1640,7 +1674,7 @@ public class EmployeeGUI extends JPanel {
 
             // Appointment Tab
             app_lookUpAppointmentTextField.setText(MainGUI.pimsSystem.lookUpAppointmentDate(toDisplay));
-            app_patientNameTextField.setText(toDisplay.getL_name() + ", " + toDisplay.getL_name());
+            app_patientNameTextField.setText(toDisplay.getL_name() + ", " + toDisplay.getF_name());
 
             // Patient Info Tab
             pInfo_lastNameTextField.setText(toDisplay.getL_name());
@@ -1678,11 +1712,81 @@ public class EmployeeGUI extends JPanel {
     private void payment_pay(){
     	
     	// only pay if all fields are filled out
-    	
-    	// update patient history
-    	clearHistory();
-        printHistory(patient);
-    }
+
+        // values to test if there are no input errors
+        boolean noEmptyFields = true, noIllegalFields = true;
+
+        //UIManager.put("OptionPane.minimumSize",new Dimension(500,300));
+        String errorMessage = "Must Enter";
+        if (String.valueOf(payment_nameField.getText()).equals("")) {
+            errorMessage += " Cardholder Name,";
+            noEmptyFields = false;
+        }
+        if (String.valueOf(payment_cardNumberField.getText()).equals("")) {
+            errorMessage += " Card Number,";
+            noEmptyFields = false;
+        }
+        if (String.valueOf(payment_cardCodeField.getText()).equals("")) {
+            errorMessage += " Card Security Code,";
+            noEmptyFields = false;
+        }
+        if (String.valueOf(payment_monthCB.getSelectedItem()).equals("")) {
+            errorMessage += " Expiration Month,";
+            noEmptyFields = false;
+        }
+        if (String.valueOf(payment_yearCB.getSelectedItem()).equals("")) {
+            errorMessage += " Expiration YEar,";
+            noEmptyFields = false;
+        }
+
+     // throws error if card number has characters other than numbers, or has less/more than 16 digits
+        if (payment_cardNumberField.getText().length() > 0 && payment_cardNumberField.getText().length() != 16) {
+            JOptionPane.showMessageDialog
+                    (null, "Card Number Must Have 16 Characters");
+            noIllegalFields = false;
+        } else if (payment_cardNumberField.getText().length() == 16) {
+            for (int i = 0; i < 16; i++) {
+                if (!Character.isDigit(payment_cardNumberField.getText().charAt(i))) {
+                    JOptionPane.showMessageDialog
+                            (null, "Card Number Must Have Only Numbers");
+                    noIllegalFields = false;
+                    break;
+                }
+            }
+        }
+        
+        // throws error if card security code has characters other than numbers, or has less/more than 3 digits
+        if (payment_cardCodeField.getText().length() > 0 && payment_cardCodeField.getText().length() != 3) {
+            JOptionPane.showMessageDialog
+                    (null, "Card Security Code Must Have 3 Characters");
+            noIllegalFields = false;
+        } else if (payment_cardCodeField.getText().length() == 3) {
+            for (int i = 0; i < 3; i++) {
+                if (!Character.isDigit(payment_cardCodeField.getText().charAt(i))) {
+                    JOptionPane.showMessageDialog
+                            (null, "Card Security Code Must Have Only Numbers");
+                    noIllegalFields = false;
+                    break;
+                }
+            }
+        }
+        
+        
+        // checks if there are no input errors
+        if (noEmptyFields && noIllegalFields) {
+
+        	JOptionPane.showMessageDialog
+        		(null, "Payment Successful");
+        	
+        	clearHistory();
+        	MainGUI.pimsSystem.recordApptPayment(currentPatient, billing_amtDueField.getText());
+        	printHistory(currentPatient);
+        	
+        } else if (!String.valueOf(errorMessage).equals("Must Enter")) {
+            JOptionPane.showMessageDialog(null, errorMessage);
+        }
+        
+    } // end payment_pay
 
     /* END Action Listener related functions*/
 
