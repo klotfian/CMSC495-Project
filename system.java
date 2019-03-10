@@ -16,7 +16,7 @@ public class system {
     private HashMap<patient, String> lookupDateMap;
     private HashMap<String, patient[]> staff_lookupAppointmentsMap;
     private HashMap<String, Double> cost_list;
-    
+
     private static PatientDB db;
 
     private int COPAY = 50;
@@ -29,7 +29,7 @@ public class system {
         date_list = new HashMap<>();
         lookupDateMap = new HashMap<>();
         staff_lookupAppointmentsMap = new HashMap<>();
-        
+
         db = new PatientDB();
 
 
@@ -63,11 +63,11 @@ public class system {
     public boolean add_patient(String f_name, String l_name, String m_name, String user_name, String password, String dob,
                                int SSN, int zip, String address, String city, String state, String p_number, boolean policy) {
 
-    	// PatientDB insert = new PatientDB();//Michael's Update to Code
-    	 
+        // PatientDB insert = new PatientDB();//Michael's Update to Code
+
         //check if the patient exists
         if (patient_exists(user_name, password)) return false;
-        
+
 
         p_list.add(new patient(f_name, l_name, m_name, user_name, password, dob, SSN, zip, address, city, state, p_number, policy));
 
@@ -75,7 +75,7 @@ public class system {
         //Michael's Update to Code BEGIN   
 
         System.out.println("add patient "+l_name+" ssn " +SSN+ " user " + user_name+ " password "+password);
-        db.insertInto(f_name, l_name, m_name, user_name, password, dob, SSN, zip, address, city, state, p_number, policy); 
+        db.insertInto(f_name, l_name, m_name, user_name, password, dob, SSN, zip, address, city, state, p_number, policy);
 
         //Michael's Update to Code END
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -243,72 +243,62 @@ public class system {
         String date = "";
         String time = "";
         int i = 0;
+        int counter = 0;
         while (true) {
-            if (date_time.charAt(i) != ' ') {
+            if (date_time.charAt(i) == ' ')
+                counter++;
+            if (counter < 3) {
                 date += date_time.charAt(i);
                 i++;
-            } else break;
+            } else {
+                i+= 2;
+                break;
+            }
         }
         while (i < date_time.length()) {
             time += date_time.charAt(i);
             i++;
         }
-        deleteDateFromStaffCalendar(date, time, patient);
-        return true;
+        System.out.println(date);
+        System.out.println(time);
+        return deleteDateFromStaffCalendar(date, time, patient);
     }
 
     // deletes date from staff calendar
-    private void deleteDateFromStaffCalendar(String date, String time, patient patient) {
-        if (!staff_lookupAppointmentsMap.containsKey(date)) {
-            JOptionPane.showMessageDialog(null, "Error");
-        } else {
+    private boolean deleteDateFromStaffCalendar(String date, String time, patient patient) {
+        if (!staff_lookupAppointmentsMap.containsKey(date))
+            return false;
+        else {
             patient[] tempArray = staff_lookupAppointmentsMap.get(date);
-
             switch (time) {
                 case "9:00am":
-                    tempArray[0] = patient;
+                    tempArray[0] = null;
                     break;
                 case "10:00am":
-                    tempArray[1] = patient;
+                    tempArray[1] = null;
                     break;
                 case "11:00am":
-                    tempArray[2] = patient;
+                    tempArray[2] = null;
                     break;
                 case "12:00pm":
-                    tempArray[3] = patient;
+                    tempArray[3] = null;
                     break;
                 case "1:00pm":
-                    tempArray[4] = patient;
+                    tempArray[4] = null;
                     break;
                 case "2:00pm":
-                    tempArray[5] = patient;
+                    tempArray[5] = null;
                     break;
                 case "3:00pm":
-                    tempArray[6] = patient;
+                    tempArray[6] = null;
                     break;
                 case "4:00pm":
-                    tempArray[7] = patient;
+                    tempArray[7] = null;
                     break;
             }
+            return true;
         }
     }
-
-
-    public boolean staff_delete_date(String date, String time) {
-        String date_time = date + "  " + time;
-        if (!date_list.containsKey(date)) return false;
-        patient patient = date_list.get(date_time);
-        date_list.remove(date_time);
-        lookupDateMap.remove(patient);
-        return true;
-
-    }
-
-    public patient lookUpAppointmentPatient(String date, String time) {
-        String s = date + "  " + time;
-        return date_list.get(s);
-    }
-
 
     public String lookUpAppointmentDate(patient patient) {
         if (!lookupDateMap.containsKey(patient))
@@ -327,7 +317,7 @@ public class system {
     }
 
     public boolean recordApptPayment(patient patient, String charge) {
-    	
+
         String appt = lookUpAppointmentDate(patient);
         if (patient != null & !appt.equals("")) {
             patient.getApptPaymentHistory().add("Paid: " + charge + " for the appointment on: " + appt);
