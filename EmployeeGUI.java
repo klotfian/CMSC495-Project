@@ -88,15 +88,15 @@ public class EmployeeGUI extends JPanel {
     private JScrollPane billing_historyScrollPane;
     private JTextArea billing_patientHistoryTextArea;
     private JButton billing_calculateButton;
-    
+
     // JDialog "pop up" payment panel for Billing Tab
-    private JDialog paymentDialog; 
+    private JDialog paymentDialog;
     private JPanel paymentPanel;
     private GridBagConstraints paymentPanelConstraints;
     private JLabel payment_instructionLabel, payment_nameLabel, payment_cardNumberLabel, payment_cardInstructionLabel,
-    	payment_cardCodeLabel, payment_cardExpMonthLabel, payment_cardExpYearLabel;
+            payment_cardCodeLabel, payment_cardExpMonthLabel, payment_cardExpYearLabel;
     private JTextField payment_nameField, payment_cardNumberField, payment_cardCodeField, payment_amtDueField;
-	private JComboBox<String> payment_monthCB, payment_yearCB;
+    private JComboBox<String> payment_monthCB, payment_yearCB;
     private JButton payment_payButton;
 
     // TAB 4: Search
@@ -105,10 +105,10 @@ public class EmployeeGUI extends JPanel {
     private JLabel search_lNameLabel, search_fNameLabel,
             search_searchDirectionLabel;
     private JTextField search_lNameField, search_fNameField;
-    private JButton search_searchButton; 
+    private JButton search_searchButton;
     private ArrayList<patient> patientsFound;
-    
-    // JDialog "pop up" selection panel for Search Tab 
+
+    // JDialog "pop up" selection panel for Search Tab
     //(when multiple patients with same First & Last name are found
     private JDialog selectPatientDialog;
     private JPanel selectPatientPanel;
@@ -116,7 +116,7 @@ public class EmployeeGUI extends JPanel {
     private JLabel selectPatient_instructionLabel;
     private JButton selectPatient_selectPatientFoundButton;
     private JComboBox<String> selectPatient_choosePatientCB;
-    
+
 
     // TAB 5: Calendar
     private JPanel calTab;
@@ -155,16 +155,16 @@ public class EmployeeGUI extends JPanel {
         initializeBillingTab();
         initializeSearchTab();
         initializeCalendarTab();
-        
+
         // NEW JDialogs
         initializePaymentDialog();
         initializeSelectPatientDialog();
 
         // add panels to tabbed pane
-        tabbedPane.add("Appointments", appTab);
-        tabbedPane.add("Patient Information", patientTab);
-        tabbedPane.add("Billing", billingTab);
         tabbedPane.add("Search", searchTab);
+        tabbedPane.add("Patient Information", patientTab);
+        tabbedPane.add("Appointments", appTab);
+        tabbedPane.add("Billing", billingTab);
         tabbedPane.add("Calendar", calTab);
 
         // set up login panel - what is shown first to Employee
@@ -195,7 +195,7 @@ public class EmployeeGUI extends JPanel {
 
         // Calendar Tab Listeners
         cal_chooseDateButton.addActionListener(e -> search_date());
-        
+
         // Payment Dialog Listeners
         payment_payButton.addActionListener(e -> payment_pay());
 
@@ -549,6 +549,7 @@ public class EmployeeGUI extends JPanel {
         patientTabConstraints.gridx = 20;
         patientTabConstraints.gridy = 30;
         patientTabConstraints.anchor = GridBagConstraints.CENTER;
+        patientTabConstraints.insets = new Insets(0, 0, 0, 0);
         patientTab.add(pInfo_policyComboBox, patientTabConstraints);
 
         // add DOB textfield
@@ -594,7 +595,7 @@ public class EmployeeGUI extends JPanel {
         patientTabConstraints.gridy = 80;
         patientTab.add(pInfo_submitNewInfoButton, patientTabConstraints);
 
-    } // end initializePatientInfoTab()s
+    } // end initializePatientInfoTab()
 
     // TAB 3: Billing
     private void initializeBillingTab() {
@@ -660,7 +661,7 @@ public class EmployeeGUI extends JPanel {
         billingTabConstraints.anchor = GridBagConstraints.NORTH;
         billingTabConstraints.insets = new Insets(20, 0, 0, 0);
         billingTab.add(billing_patientBillingLabel, billingTabConstraints);
-        
+
         // add billing instruction label
         billingTabConstraints.insets = new Insets(70, 0, 0, 0);
         billingTabConstraints.weighty = 0.1;
@@ -784,14 +785,14 @@ public class EmployeeGUI extends JPanel {
         searchTabConstraints.insets = new Insets(0, 0, 0, 120);
         searchTab.add(search_lNameLabel, searchTabConstraints);
 
-        // add last name search textfiel
+        // add last name search textfield
         searchTabConstraints.insets = new Insets(0, 110, 0, 0);
         searchTab.add(search_lNameField, searchTabConstraints);
 
         // add first name search label
         searchTabConstraints.anchor = GridBagConstraints.NORTH;
         searchTabConstraints.gridy = 30;
-        searchTabConstraints.insets = new Insets(0, 0, 0, 150);
+        searchTabConstraints.insets = new Insets(0, 0, 0, 120);
         searchTab.add(search_fNameLabel, searchTabConstraints);
 
         // add first name search textfield
@@ -801,11 +802,11 @@ public class EmployeeGUI extends JPanel {
         // add search button
         searchTabConstraints.gridy = 40;
         searchTabConstraints.ipadx = 30;
-        searchTabConstraints.weighty = 0.5;
+        searchTabConstraints.weighty = 1;
         searchTabConstraints.ipady = 10;
         searchTabConstraints.insets = new Insets(0, 0, 0, 0);
         searchTab.add(search_searchButton, searchTabConstraints);
-        
+
     } // end initializeBillingTab()
 
     // TAB 5: Calendar
@@ -900,27 +901,27 @@ public class EmployeeGUI extends JPanel {
 
         calTab.add(cal_scrollPane, calendarConstraints);
     }
-    
+
     // payment dialog after billing
     private void initializePaymentDialog(){
-    	
-    	paymentDialog = new JDialog(); 
-    	paymentDialog.setTitle("PIMS Payment Form");
-    	
-    	
+
+        paymentDialog = new JDialog();
+        paymentDialog.setTitle("PIMS Payment Form");
+
+
         paymentPanel = new JPanel(new GridBagLayout());
         paymentPanel.setBackground(MainGUI.backgroundColor);
         paymentPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
         paymentPanelConstraints = new GridBagConstraints();
-        
+
         payment_instructionLabel = new JLabel("Enter Payment Information");
         payment_nameLabel = new JLabel("Cardholder Name:");
-        payment_cardNumberLabel = new JLabel("Credit Card Number:"); 
-        payment_cardInstructionLabel = new JLabel("(#'s only. no dashes or spaces):"); 
-        payment_cardCodeLabel = new JLabel("Security Code");
+        payment_cardNumberLabel = new JLabel("Credit Card Number:");
+        payment_cardInstructionLabel = new JLabel("(#'s only. no dashes or spaces):");
+        payment_cardCodeLabel = new JLabel("Security Code:");
         payment_cardExpMonthLabel  = new JLabel("Expiration Month:");
         payment_cardExpYearLabel = new JLabel("Expiration Year:");
-        
+
         payment_instructionLabel.setFont(new java.awt.Font(payment_instructionLabel.getFont().getFontName(), Font.PLAIN, 30));
         payment_instructionLabel.setForeground(MainGUI.fontColor);
         payment_nameLabel.setForeground(MainGUI.fontColor);
@@ -929,36 +930,38 @@ public class EmployeeGUI extends JPanel {
         payment_cardCodeLabel.setForeground(MainGUI.fontColor);
         payment_cardExpMonthLabel.setForeground(MainGUI.fontColor);
         payment_cardExpYearLabel.setForeground(MainGUI.fontColor);
-        
+
         payment_nameField = new JTextField(12);
         payment_cardNumberField = new JTextField(12);
         payment_cardCodeField = new JTextField(12);
         payment_amtDueField = new JTextField(12);
         payment_amtDueField.setEditable(false);
         payment_amtDueField.setText(billing_amtDueField.getText());
-        
-        
+
+
         String[] monthOptions = {"01", "02", "03", "04", "05", "06",
-        		"07", "08", "09", "10", "11", "12"};
+                "07", "08", "09", "10", "11", "12"};
         payment_monthCB = new JComboBox<String>(monthOptions);
-        
+
         String[] yearOptions = {"2019", "2020", "2021", "2022", "2023", "2024", "2025"};
-        
+
         payment_yearCB = new JComboBox<String>(yearOptions);
         payment_payButton = new JButton("Pay");
-        
+
         payment_payButton.setForeground(MainGUI.fontColor);
-        
-        
+
+
         //add components to payment panel
-        
+
         // instruction label
+        paymentPanelConstraints.gridx = 10;
+        paymentPanelConstraints.gridy = 10;
         paymentPanelConstraints.gridwidth = 40;
         paymentPanelConstraints.weighty = 0.2;
         paymentPanelConstraints.anchor = GridBagConstraints.NORTH;
         paymentPanelConstraints.insets = new Insets(20, 0, 0, 0);
         paymentPanel.add(payment_instructionLabel, paymentPanelConstraints);
-        
+
         // card name label
         paymentPanelConstraints.gridy = 20;
         paymentPanelConstraints.weightx = 0.2;
@@ -966,108 +969,122 @@ public class EmployeeGUI extends JPanel {
         paymentPanelConstraints.anchor = GridBagConstraints.EAST;
         paymentPanelConstraints.insets = new Insets(0, 0, 0, 0);
         paymentPanel.add(payment_nameLabel, paymentPanelConstraints);
-        
+
         // card number label
         paymentPanelConstraints.gridy = 30;
         paymentPanel.add(payment_cardNumberLabel, paymentPanelConstraints);
-        
+
         // expiration month label
         paymentPanelConstraints.gridy = 40;
         paymentPanel.add(payment_cardExpMonthLabel, paymentPanelConstraints);
-        
+
         // security code label
         paymentPanelConstraints.gridx = 30;
         paymentPanelConstraints.gridy = 20;
+        paymentPanelConstraints.insets = new Insets(0, 0, 0, 20);
         paymentPanel.add(payment_cardCodeLabel, paymentPanelConstraints);
-        
+
         // expiration year label
         paymentPanelConstraints.gridy = 30;
         paymentPanel.add(payment_cardExpYearLabel, paymentPanelConstraints);
-        
+
         // card name field
         paymentPanelConstraints.gridx = 20;
         paymentPanelConstraints.gridy = 20;
         paymentPanelConstraints.anchor = GridBagConstraints.WEST;
+        paymentPanelConstraints.insets = new Insets(0, 20, 0, 0);
         paymentPanel.add(payment_nameField, paymentPanelConstraints);
-        
+
         // card number field
         paymentPanelConstraints.gridy = 30;
         paymentPanel.add(payment_cardNumberField, paymentPanelConstraints);
-        
+
         // expiration month combo box
         paymentPanelConstraints.gridy = 40;
         paymentPanel.add(payment_monthCB, paymentPanelConstraints);
-        
+
         // security code field
         paymentPanelConstraints.gridx = 40;
         paymentPanelConstraints.gridy = 20;
+        paymentPanelConstraints.insets = new Insets(0, 0, 0, 0);
         paymentPanel.add(payment_cardCodeField, paymentPanelConstraints);
-        
+
         // expiration year combo box
         paymentPanelConstraints.gridy = 30;
         paymentPanel.add(payment_yearCB, paymentPanelConstraints);
-        
+
         // payment button
-        paymentPanelConstraints.gridx = 30;
+        paymentPanelConstraints.gridx = 10;
         paymentPanelConstraints.gridy = 50;
+        paymentPanelConstraints.ipadx = 10;
+        paymentPanelConstraints.ipady = 10;
+        paymentPanelConstraints.gridwidth = 40;
+        paymentPanelConstraints.anchor = GridBagConstraints.CENTER;
         paymentPanel.add(payment_payButton, paymentPanelConstraints);
-        
-        
+
+
         // add panel to dialog
         paymentDialog.add(paymentPanel);
         paymentDialog.setSize(700, 400);
         paymentDialog.setLocationRelativeTo(null);
-     
+
     }// end initializePaymentDialog
-    
+
     // shown sometimes in Search Tab
     private void initializeSelectPatientDialog(){
-    	
-    	selectPatientDialog = new JDialog();
-    	selectPatientDialog.setTitle("Search Results");
-    	
+
+        selectPatientDialog = new JDialog();
+        selectPatientDialog.setTitle("Search Results");
+
         selectPatientPanel = new JPanel(new GridBagLayout());
         selectPatientPanel.setBackground(MainGUI.backgroundColor);
         selectPatientPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
-        
+
         selectPatientPanelConstraints = new GridBagConstraints();
-        
+
         selectPatient_instructionLabel = new JLabel("Choose Patient from Drop down List");
-        selectPatient_instructionLabel.setFont(new java.awt.Font(selectPatient_instructionLabel.getFont().getFontName(), 
-        		Font.PLAIN, 20));
+        selectPatient_instructionLabel.setFont(new java.awt.Font(selectPatient_instructionLabel.getFont().getFontName(),
+                Font.PLAIN, 20));
         selectPatient_instructionLabel.setForeground(MainGUI.fontColor);
-    	
-    	selectPatient_choosePatientCB = new JComboBox<String>();
+
+        selectPatient_choosePatientCB = new JComboBox<String>();
 
         selectPatient_selectPatientFoundButton = new JButton("Select Patient");
         selectPatient_selectPatientFoundButton.setForeground(MainGUI.fontColor);
-       
+
         // add components to panel
-        
+
         // add instruction label
+        selectPatientPanelConstraints.gridx = 10;
+        selectPatientPanelConstraints.gridy = 10;
         selectPatientPanelConstraints.gridwidth = 20;
         selectPatientPanelConstraints.weighty = 0.1;
         selectPatientPanelConstraints.anchor = GridBagConstraints.NORTH;
         selectPatientPanelConstraints.insets = new Insets(20, 0, 0, 0);
         selectPatientPanel.add(selectPatient_instructionLabel, selectPatientPanelConstraints);
-        
+
         // add combo box
         selectPatientPanelConstraints.gridy = 20;
-        selectPatientPanelConstraints.insets = new Insets(0, 0, 0, 0);
+        selectPatientPanelConstraints.weightx = 0.1;
+        selectPatientPanelConstraints.anchor = GridBagConstraints.WEST;
+        selectPatientPanelConstraints.insets = new Insets(0, 80, 0, 0);
         selectPatientPanel.add(selectPatient_choosePatientCB, selectPatientPanelConstraints);
-        
+
         // add select patient button
         selectPatientPanelConstraints.gridx = 20;
+        selectPatientPanelConstraints.ipady = 10;
+        selectPatientPanelConstraints.anchor = GridBagConstraints.EAST;
+        selectPatientPanelConstraints.insets = new Insets(0, 0, 0, 80);
         selectPatientPanel.add(selectPatient_selectPatientFoundButton, selectPatientPanelConstraints);
-        
+
         // add panel to dialog
         selectPatientDialog.add(selectPatientPanel);
         selectPatientDialog.setSize(500, 200);
         selectPatientDialog.setLocationRelativeTo(null);
 
-    	
+
     }// end initializeSelectPatientDialog()
-    
+
     /* END initialize() related functions*/
 
     /* START Action Listener related Functions */
@@ -1150,10 +1167,10 @@ public class EmployeeGUI extends JPanel {
 
     // Patient Info Tab Listeners
     private void pInfo_updateExisting() {
-    	
-    	// currentPatient is the one who is searched
-    	// does not search for patient again, in case Last name or SSN are changed
-    	
+
+        // currentPatient is the one who is searched
+        // does not search for patient again, in case Last name or SSN are changed
+
         // values to test if there are no input errors
         boolean emptyFields = true, illegalFields = true;
 
@@ -1318,7 +1335,7 @@ public class EmployeeGUI extends JPanel {
                 }
             }
         }
-        
+
         // checks if there are no input errors
         if (emptyFields && illegalFields && currentPatient != null) {
             JOptionPane.showMessageDialog
@@ -1400,8 +1417,8 @@ public class EmployeeGUI extends JPanel {
         }
 
         if (String.valueOf(pInfo_middleNameTextField.getText()).equals("")) {
-		} else
-			pInfo_middleNameTextField.getText();
+        } else
+            pInfo_middleNameTextField.getText();
 
         // throws error if last name has characters other than letters
         if (pInfo_lastNameTextField.getText().length() > 0) {
@@ -1562,7 +1579,7 @@ public class EmployeeGUI extends JPanel {
     // Billing Tab Listeners
 
     private void billing_calculate() {
-    	
+
         // need to search patient before calculating amount due
         if (billing_fullNameField.equals("")){
             JOptionPane.showMessageDialog(this, "Must search for a patient first!\nGo to the Search Tab.",
@@ -1572,10 +1589,10 @@ public class EmployeeGUI extends JPanel {
             JOptionPane.showMessageDialog(this, "No Appointment to pay for!\nGo to Appointment Tab to make one.",
                     "Nothing to pay for", JOptionPane.ERROR_MESSAGE);
         }
-        
+
         // patient has been searched - get info from patient info panel
         else {
-        	
+
             currentPatient =  MainGUI.pimsSystem.patient_details
                     (pInfo_lastNameTextField.getText(), Integer.parseInt(pInfo_ssnTextField.getText()));
             // patient has a policy, amount due is copay: $50
@@ -1583,8 +1600,8 @@ public class EmployeeGUI extends JPanel {
             double toPay = MainGUI.pimsSystem.calculate_charge(currentPatient, billing_codeCB.getSelectedItem().toString());
             billing_amtDueField.setText("$" + doubleToDecimalString(toPay));
 
-            
-            
+
+
             JOptionPane.showMessageDialog(this, "Amount Due Calculated.\nClick \"Ok\" to go to Payment Form",
                     "Calculate", JOptionPane.DEFAULT_OPTION);
 
@@ -1601,10 +1618,10 @@ public class EmployeeGUI extends JPanel {
         fName = search_fNameField.getText();
         // find patients with the Last & First Name entered
         patientsFound = MainGUI.pimsSystem.search_patient(lName, fName);
-        
+
         // more than one patient found
         if (patientsFound.size() > 1) {
-        	
+
             // create String ArrayList of patients: Last, First (DOB)
             ArrayList<String> foundList = new ArrayList<String>();
             String toAdd = "";
@@ -1622,18 +1639,18 @@ public class EmployeeGUI extends JPanel {
             for (int i = 0; i < foundList.size(); i++) {
                 selectPatient_choosePatientCB.addItem(foundList.get(i));
             }
-            
+
             // display whether patients found or not
             JOptionPane.showMessageDialog(this, "Found More than 1 Result for Last Name, First Name: " + lName + ", " + fName
                             + ".\nPress \"Ok\" to select a patient.",
-                    "Search Successful", JOptionPane.DEFAULT_OPTION); 
-            
+                    "Search Successful", JOptionPane.DEFAULT_OPTION);
+
             selectPatientDialog.setVisible(true);
         }
 
         // one patient found
         else if (patientsFound.size() == 1) {
-   
+
             JOptionPane.showMessageDialog(this, "Found one match for Last Name, First Name: " + lName + ", " + fName,
                     "Search Successful", JOptionPane.DEFAULT_OPTION);
             // display patient data
@@ -1642,7 +1659,7 @@ public class EmployeeGUI extends JPanel {
         }
         // no patient found
         else {
-        
+
             JOptionPane.showMessageDialog(this, "No Results found for Last Name, First Name:" + lName + ", " + fName,
                     "Search Failed", JOptionPane.ERROR_MESSAGE);
         }
@@ -1698,6 +1715,8 @@ public class EmployeeGUI extends JPanel {
             billing_policyField.setEditable(false);
             printHistory(toDisplay);
 
+            selectPatientDialog.setVisible(false);
+
             repaint();
             revalidate();
 
@@ -1706,12 +1725,12 @@ public class EmployeeGUI extends JPanel {
                     "Filling in Info", JOptionPane.DEFAULT_OPTION);
 
     }// end fillPatientData()
-    
+
     // Payment dialog Listeners
-    
+
     private void payment_pay(){
-    	
-    	// only pay if all fields are filled out
+
+        // only pay if all fields are filled out
 
         // values to test if there are no input errors
         boolean noEmptyFields = true, noIllegalFields = true;
@@ -1739,7 +1758,7 @@ public class EmployeeGUI extends JPanel {
             noEmptyFields = false;
         }
 
-     // throws error if card number has characters other than numbers, or has less/more than 16 digits
+        // throws error if card number has characters other than numbers, or has less/more than 16 digits
         if (payment_cardNumberField.getText().length() > 0 && payment_cardNumberField.getText().length() != 16) {
             JOptionPane.showMessageDialog
                     (null, "Card Number Must Have 16 Characters");
@@ -1754,7 +1773,7 @@ public class EmployeeGUI extends JPanel {
                 }
             }
         }
-        
+
         // throws error if card security code has characters other than numbers, or has less/more than 3 digits
         if (payment_cardCodeField.getText().length() > 0 && payment_cardCodeField.getText().length() != 3) {
             JOptionPane.showMessageDialog
@@ -1770,22 +1789,29 @@ public class EmployeeGUI extends JPanel {
                 }
             }
         }
-        
-        
+
+
         // checks if there are no input errors
         if (noEmptyFields && noIllegalFields) {
 
-        	JOptionPane.showMessageDialog
-        		(null, "Payment Successful");
-        	
-        	clearHistory();
-        	MainGUI.pimsSystem.recordApptPayment(currentPatient, billing_amtDueField.getText());
-        	printHistory(currentPatient);
-        	
+            JOptionPane.showMessageDialog
+                    (null, "Payment Successful");
+
+            clearHistory();
+            MainGUI.pimsSystem.recordApptPayment(currentPatient, billing_amtDueField.getText());
+            printHistory(currentPatient);
+
+            paymentDialog.setVisible(false);
+
+            payment_nameField.setText("");
+            payment_cardCodeField.setText("");
+            payment_cardNumberField.setText("");
+            payment_monthCB.setSelectedItem(1);
+            payment_yearCB.setSelectedItem(1);
         } else if (!String.valueOf(errorMessage).equals("Must Enter")) {
             JOptionPane.showMessageDialog(null, errorMessage);
         }
-        
+
     } // end payment_pay
 
     /* END Action Listener related functions*/
@@ -2027,7 +2053,7 @@ public class EmployeeGUI extends JPanel {
         mainGUI.setLocationRelativeTo(null); // GUI appear in center
         mainGUI.setVisible(true);
 
-    }// end main 
+    }// end main
     */
 
 }// end EmployeeGUI class
